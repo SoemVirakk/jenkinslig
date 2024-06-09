@@ -3,12 +3,12 @@ pipeline {
     agent any
     environment {
         DOCKER_TAG = "${BUILD_NUMBER}"
-        ImageName = "angularjsdocker1.1"
+        ImageName = "nextjsdocker"
     }
     stages {
         stage('Git Clone') {
             steps {
-                git branch: 'main', url: 'https://github.com/roldophe/my-angular-project.git'
+                git 'https://github.com/MuyleangIng/nextjs_docker.git'
             }
         }
         stage('Write Docker file to git Repo') {
