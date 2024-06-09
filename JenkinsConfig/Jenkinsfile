@@ -9,7 +9,7 @@ pipeline {
         TAG = "${BUILD_NUMBER}"
         CREDENTIALS_ID = 'docker-hub'
         CONTAINER_PORT = '4200'
-        HOST_PORT = '8082'
+        HOST_PORT = '3003'
         CONTAINER_NAME = "${IMAGE}-${TAG}"
     }
 
