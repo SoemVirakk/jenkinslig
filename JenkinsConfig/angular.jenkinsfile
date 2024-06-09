@@ -3,72 +3,20 @@ pipeline {
     agent any
     environment {
         DOCKER_TAG = "${BUILD_NUMBER}"
-        ImageName = "radomkhoem/angular"
+        ImageName = "nextjsdocker"
     }
     stages {
-
-        stage('Clean Workspace') {
-            steps {
-                cleanWs()
-            }
-        }
-
         stage('Git Clone') {
             steps {
-                echo "Cloning repository from GitHub"
                 git 'https://github.com/roldophe/my-angular-project.git'
             }
         }
-
-        stage('Remove Existing Images') {
-            steps {
-                echo "Removing existing Docker image."
-                sh 'docker rmi -f radomkhoem/angular1.1 || true'  // Remove existing image if it exists
-            }
-        }
-
-        stage('Write Dockerfile to Git Repo') {
+        stage('Write Docker file to git Repo') {
             steps {
                 script {
                     echo "Build number is ${BUILD_NUMBER}"
-                    nextWithDocker(DOCKER_TAG, ImageName)
+                    nextWithDocker(DOCKER_TAG,ImageName)
                 }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker image."
-                sh 'docker build -t ${ImageName} .'
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                echo "Pushing Docker image to DockerHub."
-
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                    sh '''   
-                    docker login -u $USER -p $PASS
-                    docker push ${ImageName}
-                    docker logout
-                    '''
-                }
-            }
-        }
-        
-        stage('Deploy Container') {
-            steps {
-                echo "Deploying Docker container."
-                sh 'docker stop angular_cont1.1 || true'  // Stop the existing container if it's running
-                sh 'docker rm angular_cont1.1 || true'    // Remove the existing container if it exists
-                sh 'docker run -d -p 3002:4000 --name angular_cont1.1 ${ImageName}'
-            }
-        }
-        stage('Clean Up Docker Images') {
-            steps {
-                echo "Removing dangling Docker images."
-                sh 'docker rmi $(docker images -f "dangling=true" -q) || true'  // Remove dangling images
             }
         }
         stage('List Directory') {
