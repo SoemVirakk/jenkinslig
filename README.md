@@ -1,6 +1,6 @@
 # jenkinslib
 
 # Lazy commit
-git add . \n
-git commit -m "update" \n
+git add .
+git commit -m "update"
 git push origin main
