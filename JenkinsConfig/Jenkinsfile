@@ -8,7 +8,7 @@ pipeline {
         IMAGE = 'angular-docker'
         TAG = "${BUILD_NUMBER}"
         CREDENTIALS_ID = 'docker-hub'
-        CONTAINER_PORT = '4200'
+        CONTAINER_PORT = '4000'
         HOST_PORT = '3003'
         CONTAINER_NAME = "${IMAGE}-${TAG}"
     }
