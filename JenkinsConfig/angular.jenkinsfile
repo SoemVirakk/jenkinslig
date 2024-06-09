@@ -3,7 +3,7 @@ pipeline {
     agent any
     environment {
         DOCKER_TAG = "${BUILD_NUMBER}"
-        ImageName = "nextjsdocker1.1"
+        ImageName = "angularjsdocker1.1"
     }
     stages {
         stage('Git Clone') {
