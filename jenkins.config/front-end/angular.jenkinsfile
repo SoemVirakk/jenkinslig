@@ -34,7 +34,7 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image with tag: ${DOCKER_TAG}"
-                    def dockerScript = libraryResource 'vars/buildAndPushDocker.groovy'
+                    def dockerScript = libraryResource 'vars/buildAndPushDocker'
                     dockerScript.call([image: 'my-angular-project', registry: 'dockerhub', tag: DOCKER_TAG, credentialsId: CredentialsId])
                 }
             }
