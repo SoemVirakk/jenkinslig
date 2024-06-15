@@ -108,9 +108,9 @@ pipeline {
             }
         }
     }
+}
 
-    def sendMessageToTelegram(message) {
-        def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
-        sh "curl -s -X POST '${url}' -d chat_id=${chat_id} -d text='${message}' -d parse_mode=Markdown"
-    }
+def sendMessageToTelegram(message) {
+    def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
+    sh "curl -s -X POST '${url}' -d chat_id=${chat_id} -d text='${message}' -d parse_mode=Markdown"
 }
