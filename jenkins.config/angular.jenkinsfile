@@ -32,18 +32,18 @@ pipeline {
                 sh "docker rmi -f ${IMAGE} || true"
             }
         }
-        // stage('Build and Push Docker Image') {
-        //     steps {
-        //         script {
-        //             buildAndPushDocker(
-        //                 image: env.IMAGE,
-        //                 registry: env.REGISTRY,
-        //                 tag: env.TAG,
-        //                 credentialsId: env.CREDENTIALS_ID
-        //             )
-        //         }
-        //     }
-        // }
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    buildAndPushDocker(
+                        image: env.IMAGE,
+                        registry: env.REGISTRY,
+                        tag: env.TAG,
+                        credentialsId: env.CREDENTIALS_ID
+                    )
+                }
+            }
+        }
 
         // stage('Deploy') {
         //     steps {
