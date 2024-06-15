@@ -32,6 +32,22 @@ pipeline {
                 sh "docker rmi -f ${IMAGE} || true"
             }
         }
+        
+        
+        stage('Check and Remove Running Container') {
+            steps {
+                script {
+                    // Check if a container is running on the specified container port
+                    def runningContainerId = sh(script: "docker ps -qf expose=${CONTAINER_PORT}", returnStdout: true).trim()
+
+                    if (runningContainerId) {
+                        echo "Stopping and removing the existing container."
+                        sh "docker stop ${runningContainerId}"
+                        sh "docker rm ${runningContainerId}"
+                    }
+                }
+            }
+        }
         stage('Build and Push Docker Image') {
             steps {
                 script {
@@ -59,14 +75,6 @@ pipeline {
                 }
             }
         }
-        // stage('Deploy') {
-        //     steps {
-        //         echo "Deploying Docker container."
-        //         sh "docker stop ${CONTAINER_NAME} || true"
-        //         sh "docker rm ${CONTAINER_NAME} || true"
-        //         sh "docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${env.CONTAINER_NAME} ${IMAGE}"
-        //     }
-        // }
 
         stage('Clean Up Docker Images') {
             steps {
