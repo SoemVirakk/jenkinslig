@@ -32,39 +32,39 @@ pipeline {
                 sh "docker rmi -f ${IMAGE} || true"
             }
         }
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    buildAndPushDocker(
-                        image: env.IMAGE,
-                        registry: env.REGISTRY,
-                        tag: env.TAG,
-                        credentialsId: env.CREDENTIALS_ID
-                    )
-                }
-            }
-        }
+        // stage('Build and Push Docker Image') {
+        //     steps {
+        //         script {
+        //             buildAndPushDocker(
+        //                 image: env.IMAGE,
+        //                 registry: env.REGISTRY,
+        //                 tag: env.TAG,
+        //                 credentialsId: env.CREDENTIALS_ID
+        //             )
+        //         }
+        //     }
+        // }
 
-        stage('Deploy') {
-            steps {
-                echo "Deploying Docker container."
-                sh "docker stop ${CONTAINER_NAME} || true"
-                sh "docker rm ${CONTAINER_NAME} || true"
-                sh "docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${env.CONTAINER_NAME} ${IMAGE}"
-            }
-        }
+        // stage('Deploy') {
+        //     steps {
+        //         echo "Deploying Docker container."
+        //         sh "docker stop ${CONTAINER_NAME} || true"
+        //         sh "docker rm ${CONTAINER_NAME} || true"
+        //         sh "docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${env.CONTAINER_NAME} ${IMAGE}"
+        //     }
+        // }
 
-        stage('Clean Up Docker Images') {
-            steps {
-                echo "Removing dangling Docker images."
-                sh 'docker rmi $(docker images -f "dangling=true" -q) || true'
-            }
-        }
+        // stage('Clean Up Docker Images') {
+        //     steps {
+        //         echo "Removing dangling Docker images."
+        //         sh 'docker rmi $(docker images -f "dangling=true" -q) || true'
+        //     }
+        // }
 
-        stage('Clean workspace') {
-            steps {
-                cleanWs()
-            }
-        }
+        // stage('Clean workspace') {
+        //     steps {
+        //         cleanWs()
+        //     }
+        // }
     }
 }
