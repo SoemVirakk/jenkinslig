@@ -12,28 +12,20 @@ pipeline {
                 cleanWs()
             }
         }
-        // stage('Hello') {
-        //     steps {
-        //         script {
-        //             def message = 'Good Morning!'
-        //             def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
-        //             sh "curl -s -X POST '${url}' -d chat_id=${chat_id} -d text='${message}'"
-        //         }
-        //     }
-        // }
-        stage('Send Template Message') {
+
+        stage('Send Enhanced Message') {
             steps {
                 script {
-                    // Define the template message with placeholders if needed
+                    // Define the template message with placeholders
                     def messageTemplate = '''
-                    🚀 Jenkins Job Notification 🚀
+                    🌟 *Jenkins Notification* 🌟
 
                     *Project:* ${projectName}
                     *Build Status:* ${buildStatus}
                     *Build Number:* ${buildNumber}
-                    *Build URL:* ${buildUrl}
+                    *Build URL:* [Open Build](${buildUrl})
 
-                    👷 Powered by Jenkins
+                    🚀 *Powered by Jenkins* 🚀
                     '''
                     
                     // Replace placeholders with actual values
@@ -42,10 +34,10 @@ pipeline {
                                                 .replace('${buildNumber}', currentBuild.number.toString())
                                                 .replace('${buildUrl}', env.BUILD_URL)
                     
-                    // Define the URL for the API request
+                    // Define the URL for the API request with BotToken from Jenkins environment
                     def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
                     
-                    // Send the message
+                    // Send the message using curl with Markdown parse mode
                     sh "curl -s -X POST '${url}' -d chat_id=${chat_id} -d text='${message}' -d parse_mode=Markdown"
                 }
             }
