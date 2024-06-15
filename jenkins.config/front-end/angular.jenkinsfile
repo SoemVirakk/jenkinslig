@@ -28,25 +28,32 @@ pipeline {
                 sh "docker rmi -f ${ImageName} || true"
             }
         }
-
-        stage('Build images') {
+        stage('Build and Push Docker Image') {
             steps {
-                echo "Building Docker image with tag: ${DOCKER_TAG}"
-                sh "docker build -t ${ImageName} ."
-            }
-        }
-
-
-        stage('Push images') {
-            steps {
-                echo "Pushing Docker image to DockerHub."
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh 'docker login -u $USER -p $PASS'
-                    sh "docker push ${ImageName}"
-                    sh 'docker logout'
+                script {
+                    def dockerScript = libraryResource 'vars/buildAndPushDocker.groovy'
+                    dockerScript.call(ImageName, DOCKER_TAG, CredentialsId)
                 }
             }
         }
+        // stage('Build images') {
+        //     steps {
+        //         echo "Building Docker image with tag: ${DOCKER_TAG}"
+        //         sh "docker build -t ${ImageName} ."
+        //     }
+        // }
+
+
+        // stage('Push images') {
+        //     steps {
+        //         echo "Pushing Docker image to DockerHub."
+        //         withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+        //             sh 'docker login -u $USER -p $PASS'
+        //             sh "docker push ${ImageName}"
+        //             sh 'docker logout'
+        //         }
+        //     }
+        // }
 
         // stage('Write Docker file to git Repo') {
         //     steps {
