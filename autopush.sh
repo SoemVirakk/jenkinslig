@@ -1,5 +1,5 @@
 git add .
 git commit -m "autopush"
-git push
+git push origin main
 
 # bash ./autopush.sh
