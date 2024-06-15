@@ -4,14 +4,18 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_TAG = "${BUILD_NUMBER}"
-        ImageName = "radomkhoem/angular:${DOCKER_TAG}"
-        GitRepoURL = "https://github.com/roldophe/my-angular-project.git"
-        ContainerName = "angular_cont1.1"
-        PortMapping = "80"
-        HostPort = "3002"
-    }
 
+        REGISTRY = 'shinchanz'
+        IMAGE = 'angular-docker'
+        TAG = "${BUILD_NUMBER}"
+        CREDENTIALS_ID = 'dockerhub'
+        GitRepoURL = "https://github.com/roldophe/my-angular-project.git"
+        CONTAINER_NAME = "${IMAGE}-${TAG}"
+        CONTAINER_PORT = "80"
+        HOST_PORT = "3002"
+    }
+    
+    
     stages {
         stage('Git clone') {
             steps {
@@ -25,52 +29,28 @@ pipeline {
         stage('Remove Existing Images') {
             steps {
                 echo "Removing existing Docker image."
-                sh "docker rmi -f ${ImageName} || true"
+                sh "docker rmi -f ${IMAGE} || true"
             }
         }
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    def dockerScript = libraryResource 'vars/buildAndPushDocker.groovy'
-                    dockerScript.call(ImageName, DOCKER_TAG, CredentialsId)
+                    buildAndPushDocker(
+                        image: env.IMAGE,
+                        registry: env.REGISTRY,
+                        tag: env.TAG,
+                        credentialsId: env.CREDENTIALS_ID
+                    )
                 }
             }
         }
-        // stage('Build images') {
-        //     steps {
-        //         echo "Building Docker image with tag: ${DOCKER_TAG}"
-        //         sh "docker build -t ${ImageName} ."
-        //     }
-        // }
-
-
-        // stage('Push images') {
-        //     steps {
-        //         echo "Pushing Docker image to DockerHub."
-        //         withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-        //             sh 'docker login -u $USER -p $PASS'
-        //             sh "docker push ${ImageName}"
-        //             sh 'docker logout'
-        //         }
-        //     }
-        // }
-
-        // stage('Write Docker file to git Repo') {
-        //     steps {
-        //         script {
-        //             echo "Building Docker image with tag: ${DOCKER_TAG}"
-        //             angularWithDocker(DOCKER_TAG, ImageName)
-        //         }
-        //     }
-        // }
-       
 
         stage('Deploy') {
             steps {
                 echo "Deploying Docker container."
-                sh "docker stop ${ContainerName} || true"
-                sh "docker rm ${ContainerName} || true"
-                sh "docker run -d -p ${HostPort}:${PortMapping} --name ${env.ContainerName} ${ImageName}"
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
+                sh "docker run -d -p ${HOST_PORT}:${CONTAINER_PORT} --name ${env.CONTAINER_NAME} ${IMAGE}"
             }
         }
 

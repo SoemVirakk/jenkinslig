@@ -1,14 +1,18 @@
-// buildAndPushDocker.groovy
+def call(Map config = [:]) {
+    def image = config.get('image', 'my-default-image')
+    def registry = config.get('registry', 'my-default-registry')
+    def tag = config.get('tag', 'latest')
+    def credentialsId = config.get('credentialsId', 'dockerhub-credentials')
 
-def call(imageName, dockerTag, credentialsId) {
-    def fullImageName = "${imageName}:${dockerTag}"
+    // Write Dockerfile to the workspace
+    def dockerfileContent = libraryResource 'angular.dockerfile'
+    writeFile file: 'angular.dockerfile', text: dockerfileContent
 
-    echo "Building Docker image with tag: ${fullImageName}"
-    sh "docker build -t ${fullImageName} ."
-    
-    withCredentials([usernamePassword(credentialsId: credentialsId, usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-        sh 'docker login -u $USER -p $PASS'
-        sh "docker push ${fullImageName}"
-        sh 'docker logout'
+    withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+        sh """
+            docker login -u ${USERNAME} -p ${PASSWORD}
+            docker build -t ${registry}/${image}:${tag} -f angular.dockerfile .
+            docker push ${registry}/${image}:${tag}
+        """
     }
 }
