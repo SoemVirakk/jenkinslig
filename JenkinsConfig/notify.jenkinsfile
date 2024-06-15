@@ -7,6 +7,11 @@ pipeline {
     }
   
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
         stage('Git Clone') {
             steps {
                 git 'https://github.com/MuyleangIng/nextjs_docker.git'
