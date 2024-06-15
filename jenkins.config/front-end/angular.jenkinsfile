@@ -10,6 +10,7 @@ pipeline {
         ContainerName = "angular_cont1.1"
         PortMapping = "80"
         HostPort = "3002"
+        CredentialsId = "docker-hub"
     }
 
     stages {
@@ -29,41 +30,22 @@ pipeline {
             }
         }
 
-        stage('Build images') {
+        stage('Build and Push Docker Image') {
             steps {
-                echo "Building Docker image with tag: ${DOCKER_TAG}"
-                sh "docker build -t ${ImageName} ."
-            }
-        }
-
-
-        stage('Push images') {
-            steps {
-                echo "Pushing Docker image to DockerHub."
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh 'docker login -u $USER -p $PASS'
-                    sh "docker push ${ImageName}"
-                    sh 'docker logout'
+                script {
+                    echo "Building Docker image with tag: ${DOCKER_TAG}"
+                    def dockerScript = libraryResource 'vars/buildAndPushDocker.groovy'
+                    dockerScript.call([image: 'my-angular-project', registry: 'dockerhub', tag: DOCKER_TAG, credentialsId: CredentialsId])
                 }
             }
         }
-
-        // stage('Write Docker file to git Repo') {
-        //     steps {
-        //         script {
-        //             echo "Building Docker image with tag: ${DOCKER_TAG}"
-        //             angularWithDocker(DOCKER_TAG, ImageName)
-        //         }
-        //     }
-        // }
-       
 
         stage('Deploy') {
             steps {
                 echo "Deploying Docker container."
                 sh "docker stop ${ContainerName} || true"
                 sh "docker rm ${ContainerName} || true"
-                sh "docker run -d -p ${HostPort}:${PortMapping} --name ${env.ContainerName} ${ImageName}"
+                sh "docker run -d -p ${HostPort}:${PortMapping} --name ${env.ContainerName} ${ImageName}:${DOCKER_TAG}"
             }
         }
 
