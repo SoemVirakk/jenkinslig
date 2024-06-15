@@ -29,22 +29,15 @@ pipeline {
             }
         }
 
-        // stage('Build images') {
-        //     steps {
-        //         echo "Building Docker image with tag: ${DOCKER_TAG}"
-        //         sh "docker build -t ${ImageName} ."
-        //     }
-        // }
-
         stage('Write Docker file to git Repo') {
             steps {
                 script {
-                    echo "Build number is ${BUILD_NUMBER}"
+                    echo "Building Docker image with tag: ${DOCKER_TAG}"
                     angularWithDocker(DOCKER_TAG, ImageName)
                 }
             }
         }
-        
+
         stage('Push images') {
             steps {
                 echo "Pushing Docker image to DockerHub."
