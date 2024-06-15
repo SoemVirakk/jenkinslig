@@ -5,10 +5,10 @@ pipeline {
 
     environment {
 
-        REGISTRY = 'shinchanz'
+        REGISTRY = 'radomkhoem'
         IMAGE = 'angular-docker'
         TAG = "${BUILD_NUMBER}"
-        CREDENTIALS_ID = 'dockerhub'
+        CREDENTIALS_ID = 'docker-hub'
         GitRepoURL = "https://github.com/roldophe/my-angular-project.git"
         CONTAINER_NAME = "${IMAGE}-${TAG}"
         CONTAINER_PORT = "80"
