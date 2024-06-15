@@ -13,27 +13,19 @@ RUN npm install
 # Copy the entire project
 COPY . .
 
-# Build the Angular application
 RUN npm run build
 
-# Stage 2: Serve the application with Node.js
-FROM node:18-alpine as production
+FROM node:lts
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the build output from the first stage
 COPY --from=build /app/dist /app/dist
 
-# Install Angular Universal dependencies
 RUN npm install -g @nguniversal/express-engine
 
-# Copy and install production dependencies
+# Install production dependencies
 COPY package*.json ./
 RUN npm install --only=production
-
-# Clean up npm cache to reduce the image size
-RUN npm cache clean --force
 
 # Expose port 4000 (or any other port your server listens to)
 EXPOSE 4000
