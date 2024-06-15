@@ -12,21 +12,21 @@ pipeline {
                 cleanWs()
             }
         }
-        stage('Git Clone') {
-            steps {
-                git 'https://github.com/MuyleangIng/nextjs_docker.git'
-            }
-        }
+        // stage('Git Clone') {
+        //     steps {
+        //         git 'https://github.com/MuyleangIng/nextjs_docker.git'
+        //     }
+        // }
         stage('Hello') {
             steps {
 
                 sh "curl -s -X POST \"https://api.telegram.org/bot${env.BotToken}/sendMessage\" -d chat_id=${env.chat_id} -d text=\"Good Morning!\""
             }
         }
-        stage('List Directory') {
-            steps {
-                sh "ls -lrt"
-            }
-        }
+        // stage('List Directory') {
+        //     steps {
+        //         sh "ls -lrt"
+        //     }
+        // }
     }
 }
