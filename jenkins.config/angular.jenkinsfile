@@ -68,17 +68,17 @@ pipeline {
         //     }
         // }
 
-        // stage('Clean Up Docker Images') {
-        //     steps {
-        //         echo "Removing dangling Docker images."
-        //         sh 'docker rmi $(docker images -f "dangling=true" -q) || true'
-        //     }
-        // }
+        stage('Clean Up Docker Images') {
+            steps {
+                echo "Removing dangling Docker images."
+                sh 'docker rmi $(docker images -f "dangling=true" -q) || true'
+            }
+        }
 
-        // stage('Clean workspace') {
-        //     steps {
-        //         cleanWs()
-        //     }
-        // }
+        stage('Clean workspace') {
+            steps {
+                cleanWs()
+            }
+        }
     }
 }
