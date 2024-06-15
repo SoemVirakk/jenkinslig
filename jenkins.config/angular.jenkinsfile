@@ -60,7 +60,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Deploy Docker Container') {
             steps {
                 script {
@@ -76,10 +76,11 @@ pipeline {
             }
         }
 
-        stage('Clean Up Docker Images') {
+        stage('Remove Deployed Image') {
             steps {
-                echo "Removing dangling Docker images."
-                sh 'docker rmi $(docker images -f "dangling=true" -q) || true'
+                script {
+                    sh "docker rmi ${env.REGISTRY}/${env.IMAGE}:${env.TAG} || true"
+                }
             }
         }
 
