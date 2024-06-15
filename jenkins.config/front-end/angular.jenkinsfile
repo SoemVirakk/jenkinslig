@@ -58,14 +58,14 @@ pipeline {
         // }
        
 
-        // stage('Deploy') {
-        //     steps {
-        //         echo "Deploying Docker container."
-        //         sh "docker stop ${ContainerName} || true"
-        //         sh "docker rm ${ContainerName} || true"
-        //         sh "docker run -d -p ${HostPort}:${PortMapping} --name ${env.ContainerName} ${ImageName}"
-        //     }
-        // }
+        stage('Deploy') {
+            steps {
+                echo "Deploying Docker container."
+                sh "docker stop ${ContainerName} || true"
+                sh "docker rm ${ContainerName} || true"
+                sh "docker run -d -p ${HostPort}:${PortMapping} --name ${env.ContainerName} ${ImageName}"
+            }
+        }
 
         stage('Clean Up Docker Images') {
             steps {
