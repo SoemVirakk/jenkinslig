@@ -1,27 +1,70 @@
 @Library(['jenkinslib']) _
+
 pipeline {
     agent any
+
     environment {
         DOCKER_TAG = "${BUILD_NUMBER}"
-        ImageName = "nextjsdocker"
+        ImageName = "radomkhoem/angular:${DOCKER_TAG}"
+        GitRepoURL = "https://github.com/roldophe/my-angular-project.git"
+        ContainerName = "angular_cont1.1"
+        HostPort = "3002"  // Set the default host port
     }
+
     stages {
-        stage('Git Clone') {
+        stage('Git clone') {
             steps {
-                git 'https://github.com/MuyleangIng/nextjs_docker.git'
+                echo "Cloning repository from GitHub"
+                git branch: 'main', url: env.GitRepoURL
+                sh 'ls -lrt'
+                sh 'pwd'
             }
         }
-        stage('Write Docker file to git Repo') {
+
+        stage('Remove Existing Images') {
             steps {
-                script {
-                    echo "Build number is ${BUILD_NUMBER}"
-                    nextWithDocker(DOCKER_TAG,ImageName)
+                echo "Removing existing Docker image."
+                sh "docker rmi -f ${ImageName} || true"  // Remove existing image if it exists
+            }
+        }
+
+        stage('Build images') {
+            steps {
+                echo "Building Docker image with tag: ${DOCKER_TAG}"
+                sh "docker build -t ${ImageName} ."
+            }
+        }
+
+        stage('Push images') {
+            steps {
+                echo "Pushing Docker image to DockerHub."
+                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'docker login -u $USER -p $PASS'
+                    sh "docker push ${ImageName}"
+                    sh 'docker logout'
                 }
             }
         }
-        stage('List Directory') {
+
+        stage('Deploy') {
             steps {
-                sh "ls -lrt"
+                echo "Deploying Docker container."
+                sh "docker stop ${env.ContainerName} || true"  // Stop the existing container if it's running
+                sh "docker rm ${env.ContainerName} || true"    // Remove the existing container if it exists
+                sh "docker run -d -p ${env.HostPort}:${env.PortMapping.split(":")[1]} --name ${env.ContainerName} ${ImageName}"
+            }
+        }
+
+        stage('Clean Up Docker Images') {
+            steps {
+                echo "Removing dangling Docker images."
+                sh 'docker rmi $(docker images -f "dangling=true" -q) || true'  // Remove dangling images
+            }
+        }
+
+        stage('Clean workspace') {
+            steps {
+                cleanWs()
             }
         }
     }
