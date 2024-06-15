@@ -4,16 +4,14 @@ def call(Map config = [:]) {
     def tag = config.get('tag', 'latest')
     def credentialsId = config.get('credentialsId', 'dockerhub-credentials')
 
-    // Write Dockerfile content to the workspace
-    def dockerfileContent = libraryResource 'resources/angular.dockerfile'
-    writeFile file: 'Dockerfile', text: dockerfileContent
+    // Write Dockerfile to the workspace
+    def dockerfileContent = libraryResource 'angular.dockerfile'
+    writeFile file: 'angular.dockerfile', text: dockerfileContent
 
-    // Access the username and password using the provided credentialsId
-    withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-        // Perform Docker login, build, and push commands
+    withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
         sh """
-            docker login -u $USER -p $PASS
-            docker build -t ${registry}/${image}:${tag} -f Dockerfile .
+            docker login -u ${USERNAME} -p ${PASSWORD}
+            docker build -t ${registry}/${image}:${tag} -f angular.dockerfile .
             docker push ${registry}/${image}:${tag}
         """
     }
