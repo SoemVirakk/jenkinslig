@@ -45,6 +45,20 @@ pipeline {
             }
         }
 
+        stage('Deploy Docker Container') {
+            steps {
+                script {
+                    deployDocker(
+                        image: env.IMAGE,
+                        registry: env.REGISTRY,
+                        tag: env.TAG,
+                        containerPort: env.CONTAINER_PORT,
+                        hostPort: env.HOST_PORT,
+                        containerName: env.CONTAINER_NAME
+                    )
+                }
+            }
+        }
         // stage('Deploy') {
         //     steps {
         //         echo "Deploying Docker container."
