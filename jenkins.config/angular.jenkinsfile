@@ -4,8 +4,8 @@ pipeline {
     agent any
 
     environment {
-        
-        chat_id = '6179867909'
+
+        chat_id = '1053418999'
         REGISTRY = 'radomkhoem'
         IMAGE = 'angular-docker'
         TAG = "${BUILD_NUMBER}"

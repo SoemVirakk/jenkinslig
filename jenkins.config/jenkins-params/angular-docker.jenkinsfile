@@ -5,7 +5,7 @@ pipeline {
         text(name: "expose_port", defaultValue: "8080", description: "for expose port")
         booleanParam(name: "skip_deploy", defaultValue: false, description: "use for skip stage")
         booleanParam(name: "skip_build", defaultValue: false, description: "use for skip stage")
-
+        
     }
     stages {
         stage('Git clone with choice ') {
