@@ -4,6 +4,7 @@ pipeline {
     agent any
 
     environment {
+       
         chat_id = '6179867909'
         REGISTRY = 'radomkhoem'
         IMAGE = 'angular-docker'
@@ -91,16 +92,16 @@ pipeline {
             steps {
                 script {
                     // Define the message template
-                    def message = '''
+                    def message = """
                     🌟 *Jenkins Notification* 🌟
-                    
+
                     *Project:* ${env.JOB_NAME}
                     *Build Status:* ${currentBuild.currentResult}
                     *Build Number:* ${currentBuild.number}
                     *Build URL:* [Open Build](${env.BUILD_URL})
-                    
+
                     🚀 *Powered by Jenkins* 🚀
-                    '''
+                    """
                     
                     // Send the message to Telegram
                     sendMessageToTelegram(message)
@@ -112,5 +113,17 @@ pipeline {
 
 def sendMessageToTelegram(message) {
     def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
-    sh "curl -s -X POST '${url}' -d chat_id=${chat_id} -d text='${message}' -d parse_mode=Markdown"
+    sh "curl -s -X POST '${url}' -d chat_id=${env.chat_id} -d text='${message}' -d parse_mode=Markdown"
 }
+
+def sendMessageToTelegram(message) {
+    def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
+    def response = sh(script: "curl -s -X POST '${url}' -d chat_id=${env.chat_id} -d text='${message}' -d parse_mode=Markdown", returnStdout: true)
+    echo "Telegram response: ${response}"
+}
+
+
+// def sendMessageToTelegram(message) {
+//     def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
+//     sh "curl -s -X POST '${url}' -d chat_id=${chat_id} -d text='${message}' -d parse_mode=Markdown"
+// }

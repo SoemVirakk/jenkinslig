@@ -6,7 +6,6 @@ pipeline {
         booleanParam(name: "skip_deploy", defaultValue: false, description: "use for skip stage")
         booleanParam(name: "skip_build", defaultValue: false, description: "use for skip stage")
 
-
     }
     stages {
         stage('Git clone with choice ') {
