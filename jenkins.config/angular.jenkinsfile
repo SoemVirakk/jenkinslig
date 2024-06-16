@@ -27,13 +27,6 @@ pipeline {
             }
         }
 
-        stage('Remove Existing Images') {
-            steps {
-                echo "Removing existing Docker image."
-                sh "docker rmi -f ${IMAGE} || true"
-                sendMessageToTelegram("Remove Existing Images stage completed")
-            }
-        }
 
         stage('Check and Remove Running Container') {
             steps {
