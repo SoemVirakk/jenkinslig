@@ -5,8 +5,8 @@ def call(Map config = [:]) {
     def credentialsId = config.get('credentialsId', 'dockerhub-credentials')
 
     // Write Dockerfile to the workspace
-    def dockerfileContent = libraryResource 'angular.dockerfile'
-    writeFile file: 'angular.dockerfile', text: dockerfileContent
+    def dockerfileContent = libraryResource 'api.dockerfile'
+    writeFile file: 'api.dockerfile', text: dockerfileContent
 
     withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
         sh """
