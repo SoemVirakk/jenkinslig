@@ -1,0 +1,112 @@
+@Library(['jenkinslib']) _
+
+pipeline {
+    agent any
+
+    environment {
+
+        chat_id = '1053418999'
+        REGISTRY = 'radomkhoem'
+        IMAGE = 'medical-clinic'
+        TAG = "${BUILD_NUMBER}"
+        CREDENTIALS_ID = 'docker-hub'
+        GitRepoURL = "https://github.com/roldophe/medical-clinic.git"
+        CONTAINER_NAME = "${IMAGE}-${TAG}"
+        CONTAINER_PORT = "8080"
+        HOST_PORT = "8082"
+    }
+
+    stages {
+        stage('Git clone') {
+            steps {
+                echo "Cloning repository from GitHub"
+                git branch: 'main', url: env.GitRepoURL
+                sh 'ls -lrt'
+                sh 'pwd'
+                sendMessageToTelegram("Git clone stage completed")
+            }
+        }
+
+
+        // stage('Check and Remove Running Container') {
+        //     steps {
+        //         script {
+        //             def runningContainerId = sh(script: "docker ps -qf expose=${CONTAINER_PORT}", returnStdout: true).trim()
+
+        //             if (runningContainerId) {
+        //                 echo "Stopping and removing the existing container."
+        //                 sh "docker stop ${runningContainerId}"
+        //                 sh "docker rm ${runningContainerId}"
+        //             }
+
+        //             sendMessageToTelegram("Removing the running container")
+        //         }
+        //     }
+        // }
+
+        // stage('Build and Push Docker Image') {
+        //     steps {
+        //         script {
+        //             buildAndPushDocker(
+        //                 image: env.IMAGE,
+        //                 registry: env.REGISTRY,
+        //                 tag: env.TAG,
+        //                 credentialsId: env.CREDENTIALS_ID
+        //             )
+        //             sendMessageToTelegram("Build and Push Docker Image Successfully") 
+        //         }
+        //     }
+        // }
+
+        // stage('Deploy Docker Container') {
+        //     steps {
+        //         script {
+        //             deployDocker(
+        //                 image: env.IMAGE,
+        //                 registry: env.REGISTRY,
+        //                 tag: env.TAG,
+        //                 containerPort: env.CONTAINER_PORT,
+        //                 hostPort: env.HOST_PORT,
+        //                 containerName: env.CONTAINER_NAME
+        //             )
+        //             sendMessageToTelegram("Deploy Docker Container Successfully ")
+        //         }
+        //     }
+        // }
+
+        // stage('Clean workspace') {
+        //     steps {
+        //         cleanWs()
+        //         sendMessageToTelegram(" Clean worksapce Successfully ")
+        //     }
+        // }
+
+        // stage('Send Enhanced Message') {
+        //     steps {
+        //         script {
+        //             // Define the message template
+        //             def message = """
+        //             🌟 *Jenkins Notification* 🌟
+
+        //             *Project:* ${env.JOB_NAME}
+        //             *Build Status:* ${currentBuild.currentResult}
+        //             *Build Number:* ${currentBuild.number}
+        //             *Build URL:* [Open Build](${env.BUILD_URL})
+
+        //             🚀 *Powered by Jenkins* 🚀
+        //             """
+                    
+        //             // Send the message to Telegram
+        //             sendMessageToTelegram(message)
+        //         }
+        //     }
+        // }
+    }
+}
+
+
+def sendMessageToTelegram(message) {
+    def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
+    def response = sh(script: "curl -s -X POST '${url}' -d chat_id=${env.chat_id} -d text='${message}' -d parse_mode=Markdown", returnStdout: true)
+    echo "Telegram response: ${response}"
+}
