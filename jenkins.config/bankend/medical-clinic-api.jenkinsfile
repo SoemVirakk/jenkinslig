@@ -34,35 +34,35 @@ pipeline {
         }
 
 
-        stage('Check and Remove Running Container') {
-            steps {
-                script {
-                    def runningContainerId = sh(script: "docker ps -qf expose=${CONTAINER_PORT}", returnStdout: true).trim()
+        // stage('Check and Remove Running Container') {
+        //     steps {
+        //         script {
+        //             def runningContainerId = sh(script: "docker ps -qf expose=${CONTAINER_PORT}", returnStdout: true).trim()
 
-                    if (runningContainerId) {
-                        echo "Stopping and removing the existing container."
-                        sh "docker stop ${runningContainerId}"
-                        sh "docker rm ${runningContainerId}"
-                    }
+        //             if (runningContainerId) {
+        //                 echo "Stopping and removing the existing container."
+        //                 sh "docker stop ${runningContainerId}"
+        //                 sh "docker rm ${runningContainerId}"
+        //             }
 
-                    sendMessageToTelegram("Removing the running container")
-                }
-            }
-        }
+        //             sendMessageToTelegram("Removing the running container")
+        //         }
+        //     }
+        // }
 
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    buildAndPushDocker(
-                        image: env.IMAGE,
-                        registry: env.REGISTRY,
-                        tag: env.TAG,
-                        credentialsId: env.CREDENTIALS_ID
-                    )
-                    sendMessageToTelegram("Build and Push Docker Image Successfully") 
-                }
-            }
-        }
+        // stage('Build and Push Docker Image') {
+        //     steps {
+        //         script {
+        //             buildAndPushDocker(
+        //                 image: env.IMAGE,
+        //                 registry: env.REGISTRY,
+        //                 tag: env.TAG,
+        //                 credentialsId: env.CREDENTIALS_ID
+        //             )
+        //             sendMessageToTelegram("Build and Push Docker Image Successfully") 
+        //         }
+        //     }
+        // }
 
         // stage('Deploy Docker Container') {
         //     steps {
