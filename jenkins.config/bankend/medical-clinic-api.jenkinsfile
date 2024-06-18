@@ -17,6 +17,12 @@ pipeline {
     }
 
     stages {
+        stage('Clean workspace') {
+            steps {
+                cleanWs()
+                sendMessageToTelegram(" Clean worksapce Successfully ")
+            }
+        }
         stage('Git clone') {
             steps {
                 echo "Cloning repository from GitHub"
@@ -74,12 +80,7 @@ pipeline {
         //     }
         // }
 
-        stage('Clean workspace') {
-            steps {
-                cleanWs()
-                sendMessageToTelegram(" Clean worksapce Successfully ")
-            }
-        }
+        
 
         // stage('Send Enhanced Message') {
         //     steps {
