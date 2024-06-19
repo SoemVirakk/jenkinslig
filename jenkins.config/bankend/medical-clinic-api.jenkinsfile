@@ -50,19 +50,14 @@ pipeline {
         //     }
         // }
 
-        // stage('Build and Push Docker Image') {
-        //     steps {
-        //         script {
-        //             buildAndPushDocker(
-        //                 image: env.IMAGE,
-        //                 registry: env.REGISTRY,
-        //                 tag: env.TAG,
-        //                 credentialsId: env.CREDENTIALS_ID
-        //             )
-        //             sendMessageToTelegram("Build and Push Docker Image Successfully") 
-        //         }
-        //     }
-        // }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    apiBuildAndPushDocker()
+                    sendMessageToTelegram("Build and Push Docker Image Successfully") 
+                }
+            }
+        }
 
         // stage('Deploy Docker Container') {
         //     steps {
