@@ -76,7 +76,13 @@ pipeline {
         // }
 
         
-
+        stage('Clean Up Docker Images') {
+            steps {
+                echo "Removing dangling Docker images."
+                sh 'docker rmi $(docker images -f "dangling=true" -q) || true'  // Remove dangling images
+                sendMessageToTelegram("Remove dangling images Successfully ")
+            }
+        }
         // stage('Send Enhanced Message') {
         //     steps {
         //         script {
