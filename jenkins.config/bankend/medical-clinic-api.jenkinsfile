@@ -32,14 +32,14 @@ pipeline {
                 sendMessageToTelegram("Git clone stage completed")
             }
         }
-        // stage('Build Docker Image') {
-        //     steps {
-        //         script {
-        //             buildMedicalClinicApi()
-        //             sendMessageToTelegram("Build and Push Docker Image Successfully") 
-        //         }
-        //     }
-        // }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    buildMedicalClinicApi()
+                    sendMessageToTelegram("Build and Push Docker Image Successfully") 
+                }
+            }
+        }
 
         stage('Check and Remove Running Container') {
             steps {
@@ -56,19 +56,19 @@ pipeline {
                 }
             }
         }
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    apiBuildAndPushDocker(
-                        image: env.IMAGE,
-                        registry: env.REGISTRY,
-                        tag: env.TAG,
-                        credentialsId: env.CREDENTIALS_ID
-                    )
-                    sendMessageToTelegram("Build and Push Docker Image Successfully") 
-                }
-            }
-        }
+        // stage('Build and Push Docker Image') {
+        //     steps {
+        //         script {
+        //             apiBuildAndPushDocker(
+        //                 image: env.IMAGE,
+        //                 registry: env.REGISTRY,
+        //                 tag: env.TAG,
+        //                 credentialsId: env.CREDENTIALS_ID
+        //             )
+        //             sendMessageToTelegram("Build and Push Docker Image Successfully") 
+        //         }
+        //     }
+        // }
         // stage('Deploy Docker Container') {
         //     steps {
         //         script {
