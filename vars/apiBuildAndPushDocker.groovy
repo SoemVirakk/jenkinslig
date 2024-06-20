@@ -4,16 +4,21 @@ def call(Map config = [:]) {
     def tag = config.get('tag', 'latest')
     def credentialsId = config.get('credentialsId', 'dockerhub-credentials')
 
-    // Write Dockerfile to the workspace
-    def dockerfileContent = libraryResource 'apiMedicalClinic.dockerfile'
-    writeFile file: 'Dockerfile', text: dockerfileContent
+    try {
+        // Write Dockerfile to workspace
+        def dockerfileContent = libraryResource 'apiMedicalClinic.dockerfile'
+        writeFile file: 'Dockerfile', text: dockerfileContent
 
-    // Initial build using the radomkhoem/medical-clinic-docker:latest tag
-    withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-        sh """
-            docker login -u ${USERNAME} -p ${PASSWORD}
-            docker build -t ${registry}/${image}:${tag} -f Dockerfile .
-            docker push ${registry}/${image}:${tag}
-        """
+        // Build Docker image
+        sh "docker build -t ${registry}/${image}:${tag} ."
+
+        // Authenticate and push Docker image
+        withCredentials([usernamePassword(credentialsId: credentialsId, passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            sh "docker login -u ${USERNAME} -p ${PASSWORD}"
+            sh "docker push ${registry}/${image}:${tag}"
+        }
+    } catch (Exception e) {
+        echo "Error: ${e.message}"
+        throw e
     }
 }

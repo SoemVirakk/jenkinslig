@@ -103,6 +103,17 @@ pipeline {
             }
         }
     }
+    post {
+        success {
+            sendMessageToTelegram("Pipeline ${env.JOB_NAME} execution completed successfully.")
+        }
+        failure {
+            sendMessageToTelegram("Pipeline ${env.JOB_NAME} execution failed. Check details at ${env.BUILD_URL}.")
+        }
+        always {
+            cleanWs()
+        }
+    }
 }
 
 def sendMessageToTelegram(message) {

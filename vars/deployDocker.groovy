@@ -6,7 +6,11 @@ def call(Map config = [:]) {
     def hostPort = config.get('hostPort', '8080')
     def containerName = config.get('containerName', 'my-container')
 
-    sh """
-        docker run -d -p ${hostPort}:${containerPort} --name ${containerName} ${registry}/${image}:${tag}
-    """
+    try {
+        // Deploy Docker container using the given config parameters
+        sh "docker run -d -p ${hostPort}:${containerPort} --name ${containerName} ${registry}/${image}:${tag}"
+    } catch (Exception e) {
+        echo "Error: ${e.message}"
+        throw e
+    }
 }
