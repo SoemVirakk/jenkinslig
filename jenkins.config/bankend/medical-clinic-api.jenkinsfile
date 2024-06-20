@@ -4,7 +4,6 @@ pipeline {
     agent any
 
     environment {
-
         chat_id = '1053418999'
         REGISTRY = 'radomkhoem'
         IMAGE = 'medical-clinic'
@@ -20,7 +19,7 @@ pipeline {
         stage('Clean workspace') {
             steps {
                 cleanWs()
-                sendMessageToTelegram(" Clean worksapce Successfully ")
+                sendMessageToTelegram("Clean workspace successfully")
             }
         }
         stage('Git clone') {
@@ -32,21 +31,24 @@ pipeline {
                 sendMessageToTelegram("Git clone stage completed")
             }
         }
-        // stage('Check and Remove Running Container') {
-        //     steps {
-        //         script {
-        //             def runningContainerId = sh(script: "docker ps -qf expose=${CONTAINER_PORT}", returnStdout: true).trim()
+        stage('Check and Remove Running Container') {
+            steps {
+                script {
+                    // Check if a container is running on the HOST_PORT and stop/remove it if exists
+                    def runningContainerId = sh(script: "docker ps -q --filter 'publish=${HOST_PORT}'", returnStdout: true).trim()
 
-        //             if (runningContainerId) {
-        //                 echo "Stopping and removing the existing container."
-        //                 sh "docker stop ${runningContainerId}"
-        //                 sh "docker rm ${runningContainerId}"
-        //             }
+                    if (runningContainerId) {
+                        echo "Stopping and removing the existing container with ID: ${runningContainerId}."
+                        sh "docker stop ${runningContainerId}"
+                        sh "docker rm ${runningContainerId}"
+                    } else {
+                        echo "No container is running on port ${HOST_PORT}."
+                    }
 
-        //             sendMessageToTelegram("Removing the running container")
-        //         }
-        //     }
-        // }
+                    sendMessageToTelegram("Checked and removed running container on port ${HOST_PORT}")
+                }
+            }
+        }
         stage('Build and Push Docker Image') {
             steps {
                 script {
@@ -56,7 +58,7 @@ pipeline {
                         tag: env.TAG,
                         credentialsId: env.CREDENTIALS_ID
                     )
-                    sendMessageToTelegram("Build and Push Docker Image Successfully") 
+                    sendMessageToTelegram("Build and push Docker image successfully")
                 }
             }
         }
@@ -71,23 +73,20 @@ pipeline {
                         hostPort: env.HOST_PORT,
                         containerName: env.CONTAINER_NAME
                     )
-                    sendMessageToTelegram("Deploy Docker Container Successfully ")
+                    sendMessageToTelegram("Deploy Docker container successfully")
                 }
             }
         }
-
-        
         stage('Clean Up Docker Images') {
             steps {
                 echo "Removing dangling Docker images."
                 sh 'docker rmi $(docker images -f "dangling=true" -q) || true'  // Remove dangling images
-                sendMessageToTelegram("Remove dangling images Successfully ")
+                sendMessageToTelegram("Remove dangling images successfully")
             }
         }
         stage('Send Enhanced Message') {
             steps {
                 script {
-                    // Define the message template
                     def message = """
                     🌟 *Jenkins Notification* 🌟
 
@@ -98,15 +97,13 @@ pipeline {
 
                     🚀 *Powered by Jenkins* 🚀
                     """
-                    
-                    // Send the message to Telegram
+
                     sendMessageToTelegram(message)
                 }
             }
         }
     }
 }
-
 
 def sendMessageToTelegram(message) {
     def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
