@@ -1,0 +1,135 @@
+@Library(['jenkinslib']) _
+
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'CHAT_ID', defaultValue: '1053418999', description: 'Telegram Chat ID')
+        string(name: 'REGISTRY', defaultValue: 'radomkhoem', description: 'Docker Registry')
+        string(name: 'IMAGE', defaultValue: 'medical-clinic', description: 'Docker Image Name')
+        string(name: 'TAG', defaultValue: "${BUILD_NUMBER}", description: 'Image Tag')
+        string(name: 'CREDENTIALS_ID', defaultValue: 'docker-hub', description: 'Credentials ID for Docker Hub')
+        string(name: 'GIT_REPO_URL', defaultValue: 'https://github.com/roldophe/medical-clinic.git', description: 'Git Repository URL')
+        string(name: 'CONTAINER_NAME', defaultValue: '', description: 'Name of the Docker Container')
+        string(name: 'CONTAINER_PORT', defaultValue: '8080', description: 'Container Port')
+        string(name: 'HOST_PORT', defaultValue: '8082', description: 'Host Port')
+    }
+
+    environment {
+        CHAT_ID = "${params.CHAT_ID}"
+        REGISTRY = "${params.REGISTRY}"
+        IMAGE = "${params.IMAGE}"
+        TAG = "${params.TAG}"
+        CREDENTIALS_ID = "${params.CREDENTIALS_ID}"
+        GitRepoURL = "${params.GIT_REPO_URL}"
+        CONTAINER_NAME = "${params.CONTAINER_NAME ?: params.IMAGE + '-' + params.TAG}"
+        CONTAINER_PORT = "${params.CONTAINER_PORT}"
+        HOST_PORT = "${params.HOST_PORT}"
+    }
+
+    stages {
+        stage('Clean workspace') {
+            steps {
+                cleanWs()
+                sendMessageToTelegram("Clean workspace successfully")
+            }
+        }
+        stage('Git clone') {
+            steps {
+                echo "Cloning repository from GitHub"
+                git branch: 'main', url: env.GitRepoURL
+                sh 'ls -lrt'
+                sh 'pwd'
+                sendMessageToTelegram("Git clone stage completed")
+            }
+        }
+        stage('Check and Remove Running Container') {
+            steps {
+                script {
+                    // Check if a container is running on the HOST_PORT and stop/remove it if exists
+                    def runningContainerId = sh(script: "docker ps -q --filter 'publish=${HOST_PORT}'", returnStdout: true).trim()
+
+                    if (runningContainerId) {
+                        echo "Stopping and removing the existing container with ID: ${runningContainerId}."
+                        sh "docker stop ${runningContainerId}"
+                        sh "docker rm ${runningContainerId}"
+                    } else {
+                        echo "No container is running on port ${HOST_PORT}."
+                    }
+
+                    sendMessageToTelegram("Checked and removed running container on port ${HOST_PORT}")
+                }
+            }
+        }
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    apiBuildAndPushDocker(
+                        image: env.IMAGE,
+                        registry: env.REGISTRY,
+                        tag: env.TAG,
+                        credentialsId: env.CREDENTIALS_ID
+                    )
+                    sendMessageToTelegram("Build and push Docker image successfully")
+                }
+            }
+        }
+        stage('Deploy Docker Container') {
+            steps {
+                script {
+                    deployDocker(
+                        image: env.IMAGE,
+                        registry: env.REGISTRY,
+                        tag: env.TAG,
+                        containerPort: env.CONTAINER_PORT,
+                        hostPort: env.HOST_PORT,
+                        containerName: env.CONTAINER_NAME
+                    )
+                    sendMessageToTelegram("Deploy Docker container successfully")
+                }
+            }
+        }
+        stage('Clean Up Docker Images') {
+            steps {
+                echo "Removing dangling Docker images."
+                sh 'docker rmi $(docker images -f "dangling=true" -q) || true'  // Remove dangling images
+                sendMessageToTelegram("Remove dangling images successfully")
+            }
+        }
+        stage('Send Enhanced Message') {
+            steps {
+                script {
+                    def message = """
+                    🌟 *Jenkins Notification* 🌟
+
+                    *Project:* ${env.JOB_NAME}
+                    *Build Status:* ${currentBuild.currentResult}
+                    *Build Number:* ${currentBuild.number}
+                    *Build URL:* [Open Build](${env.BUILD_URL})
+
+                    🚀 *Powered by Jenkins* 🚀
+                    """
+
+                    sendMessageToTelegram(message)
+                }
+            }
+        }
+    }
+    post {
+        success {
+            sendMessageToTelegram("Pipeline ${env.JOB_NAME} execution completed successfully.")
+        }
+        failure {
+            sendMessageToTelegram("Pipeline ${env.JOB_NAME} execution failed. Check details at ${env.BUILD_URL}.")
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
+
+def sendMessageToTelegram(message) {
+    def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
+    def response = sh(script: "curl -s -X POST '${url}' -d chat_id=${env.CHAT_ID} -d text='${message}' -d parse_mode=Markdown", returnStdout: true)
+    echo "Telegram response: ${response}"
+}
