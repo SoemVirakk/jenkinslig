@@ -32,33 +32,43 @@ pipeline {
                 sendMessageToTelegram("Git clone stage completed")
             }
         }
-
-
-        // stage('Check and Remove Running Container') {
+        // stage('Build Docker Image') {
         //     steps {
         //         script {
-        //             def runningContainerId = sh(script: "docker ps -qf expose=${CONTAINER_PORT}", returnStdout: true).trim()
-
-        //             if (runningContainerId) {
-        //                 echo "Stopping and removing the existing container."
-        //                 sh "docker stop ${runningContainerId}"
-        //                 sh "docker rm ${runningContainerId}"
-        //             }
-
-        //             sendMessageToTelegram("Removing the running container")
+        //             buildMedicalClinicApi()
+        //             sendMessageToTelegram("Build and Push Docker Image Successfully") 
         //         }
         //     }
         // }
 
-        stage('Build Docker Image') {
+        stage('Check and Remove Running Container') {
             steps {
                 script {
-                    buildMedicalClinicApi()
+                    def runningContainerId = sh(script: "docker ps -qf expose=${CONTAINER_PORT}", returnStdout: true).trim()
+
+                    if (runningContainerId) {
+                        echo "Stopping and removing the existing container."
+                        sh "docker stop ${runningContainerId}"
+                        sh "docker rm ${runningContainerId}"
+                    }
+
+                    sendMessageToTelegram("Removing the running container")
+                }
+            }
+        }
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    apiBuildAndPushDocker(
+                        image: env.IMAGE,
+                        registry: env.REGISTRY,
+                        tag: env.TAG,
+                        credentialsId: env.CREDENTIALS_ID
+                    )
                     sendMessageToTelegram("Build and Push Docker Image Successfully") 
                 }
             }
         }
-
         // stage('Deploy Docker Container') {
         //     steps {
         //         script {
@@ -83,26 +93,26 @@ pipeline {
                 sendMessageToTelegram("Remove dangling images Successfully ")
             }
         }
-        // stage('Send Enhanced Message') {
-        //     steps {
-        //         script {
-        //             // Define the message template
-        //             def message = """
-        //             🌟 *Jenkins Notification* 🌟
+        stage('Send Enhanced Message') {
+            steps {
+                script {
+                    // Define the message template
+                    def message = """
+                    🌟 *Jenkins Notification* 🌟
 
-        //             *Project:* ${env.JOB_NAME}
-        //             *Build Status:* ${currentBuild.currentResult}
-        //             *Build Number:* ${currentBuild.number}
-        //             *Build URL:* [Open Build](${env.BUILD_URL})
+                    *Project:* ${env.JOB_NAME}
+                    *Build Status:* ${currentBuild.currentResult}
+                    *Build Number:* ${currentBuild.number}
+                    *Build URL:* [Open Build](${env.BUILD_URL})
 
-        //             🚀 *Powered by Jenkins* 🚀
-        //             """
+                    🚀 *Powered by Jenkins* 🚀
+                    """
                     
-        //             // Send the message to Telegram
-        //             sendMessageToTelegram(message)
-        //         }
-        //     }
-        // }
+                    // Send the message to Telegram
+                    sendMessageToTelegram(message)
+                }
+            }
+        }
     }
 }
 
