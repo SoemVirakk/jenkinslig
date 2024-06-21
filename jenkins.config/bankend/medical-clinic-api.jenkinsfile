@@ -52,13 +52,19 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    apiBuildAndPushDocker(
-                        image: env.IMAGE,
-                        registry: env.REGISTRY,
-                        tag: env.TAG,
-                        credentialsId: env.CREDENTIALS_ID
-                    )
-                    sendMessageToTelegram("Build and push Docker image successfully")
+                    try {
+                        apiBuildAndPushDocker(
+                            image: env.IMAGE,
+                            registry: env.REGISTRY,
+                            tag: env.TAG,
+                            credentialsId: env.CREDENTIALS_ID
+                        )
+                        sendMessageToTelegram("Build and push Docker image successfully")
+                    } catch (Exception e) {
+                        def errorMessage = "Error building or pushing Docker image: ${e.message}"
+                        sendMessageToTelegram(errorMessage)
+                        throw e
+                    }
                 }
             }
         }
