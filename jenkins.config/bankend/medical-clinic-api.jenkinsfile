@@ -1,3 +1,5 @@
+@Library(['jenkinslib']) _
+
 pipeline {
     agent any
 
@@ -20,15 +22,15 @@ pipeline {
                 sendMessageToTelegram("Clean workspace successfully")
             }
         }
-        // stage('Git clone') {
-        //     steps {
-        //         echo "Cloning repository from GitHub"
-        //         git branch: 'main', url: env.GitRepoURL
-        //         sh 'ls -lrt'
-        //         sh 'pwd'
-        //         sendMessageToTelegram("Git clone stage completed")
-        //     }
-        // }
+        stage('Git clone') {
+            steps {
+                echo "Cloning repository from GitHub"
+                git branch: 'main', url: env.GitRepoURL
+                sh 'ls -lrt'
+                sh 'pwd'
+                sendMessageToTelegram("Git clone stage completed")
+            }
+        }
         stage('Check and Remove Running Container') {
             steps {
                 script {
@@ -50,19 +52,13 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    try {
-                        apiBuildAndPushDocker(
-                            image: env.IMAGE,
-                            registry: env.REGISTRY,
-                            tag: env.TAG,
-                            credentialsId: env.CREDENTIALS_ID
-                        )
-                        sendMessageToTelegram("Build and push Docker image successfully")
-                    } catch (Exception e) {
-                        def errorMessage = "Error building or pushing Docker image: ${e.message}"
-                        sendMessageToTelegram(errorMessage)
-                        throw e
-                    }
+                    apiBuildAndPushDocker(
+                        image: env.IMAGE,
+                        registry: env.REGISTRY,
+                        tag: env.TAG,
+                        credentialsId: env.CREDENTIALS_ID
+                    )
+                    sendMessageToTelegram("Build and push Docker image successfully")
                 }
             }
         }
@@ -106,29 +102,12 @@ pipeline {
                 }
             }
         }
-        stage('Clean Up Build Environment') {
-            when {
-                expression { currentBuild.result != 'SUCCESS' }
-            }
-            steps {
-                script {
-                    cleanWs()
-                    sh 'docker stop $(docker ps -q) || true'
-                    sh 'docker rm $(docker ps -aq) || true'
-                    sh 'docker rmi $(docker images -aq) || true'
-                }
-            }
-        }
     }
+    
+}
 
-    post {
-        always {
-            script {
-                cleanWs()
-                sh 'docker stop $(docker ps -q) || true'
-                sh 'docker rm $(docker ps -aq) || true'
-                sh 'docker rmi $(docker images -aq) || true'
-            }
-        }
-    }
+def sendMessageToTelegram(message) {
+    def url = "https://api.telegram.org/bot${env.BotToken}/sendMessage"
+    def response = sh(script: "curl -s -X POST '${url}' -d chat_id=${env.chat_id} -d text='${message}' -d parse_mode=Markdown", returnStdout: true)
+    echo "Telegram response: ${response}"
 }
