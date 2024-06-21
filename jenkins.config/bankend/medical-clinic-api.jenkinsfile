@@ -20,15 +20,15 @@ pipeline {
                 sendMessageToTelegram("Clean workspace successfully")
             }
         }
-        stage('Git clone') {
-            steps {
-                echo "Cloning repository from GitHub"
-                git branch: 'main', url: env.GitRepoURL
-                sh 'ls -lrt'
-                sh 'pwd'
-                sendMessageToTelegram("Git clone stage completed")
-            }
-        }
+        // stage('Git clone') {
+        //     steps {
+        //         echo "Cloning repository from GitHub"
+        //         git branch: 'main', url: env.GitRepoURL
+        //         sh 'ls -lrt'
+        //         sh 'pwd'
+        //         sendMessageToTelegram("Git clone stage completed")
+        //     }
+        // }
         stage('Check and Remove Running Container') {
             steps {
                 script {
